@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/alexandrevicenzi/go-sse"
 	"github.com/eclipse/paho.mqtt.golang"
+	"github.com/jw3/ppc/servers"
 	"github.com/xujiajun/gorouter"
 	"log"
 	"net/http"
@@ -12,14 +13,10 @@ import (
 )
 
 func main() {
-	brokerHost, ok := os.LookupEnv("MQTT_HOST")
-	if !ok {
-		brokerHost = "localhost"
-	}
-	brokerUri := fmt.Sprintf("tcp://%s:1883", brokerHost)
-	log.Printf("mqtt @ %s", brokerUri)
+	cfg := servers.NewServerConfiguration()
+	log.Printf("mqtt @ %s", cfg.BrokerURI)
 
-	opts := mqtt.NewClientOptions().AddBroker(brokerUri).SetClientID("notpc")
+	opts := mqtt.NewClientOptions().AddBroker(cfg.BrokerURI).SetClientID(cfg.ClientID)
 	opts.SetKeepAlive(2 * time.Second)
 	opts.SetPingTimeout(1 * time.Second)
 
