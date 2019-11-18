@@ -45,11 +45,11 @@ all-images: ppc-image
 
 # private cloud server
 ppc:
-	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/ppc ./server/cmd/main.go
+	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/ppc ./servers/cmd/main.go
 
 ppc-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make ppc
 
 ppc-image: ppc-linux
-	docker build -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./server/cmd/Dockerfile .
+	docker build -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) ; fi
