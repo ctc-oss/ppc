@@ -53,7 +53,7 @@ func main() {
 		c.Publish(t, 0, false, r.Body)
 		w.WriteHeader(http.StatusOK)
 	})
-	http.Handle("/v1/devices", mux)
+	http.Handle("/", mux)
 
 	go func() {
 		for {
