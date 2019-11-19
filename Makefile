@@ -10,6 +10,10 @@ GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_TAG=$(shell if [ -z "`git status --porcelain`" ]; then git describe --exact-match --tags HEAD 2>/dev/null; fi)
 GIT_TREE_STATE=$(shell if [ -z "`git status --porcelain`" ]; then echo "clean" ; else echo "dirty"; fi)
 
+FW_BUILD_DIR=${DIST_DIR}/firmware
+export FW_SRC_DIR=${CURRENT_DIR}/firmware
+export FW_VERSION=${VERSION}
+
 override LDFLAGS += \
   -X ${PACKAGE}.version=${VERSION} \
   -X ${PACKAGE}.buildDate=${BUILD_DATE} \
@@ -41,7 +45,7 @@ all: ppc
 
 all-images: ppc-image
 
-.PHONY: all clean test
+.PHONY: all clean test firmware
 
 # private cloud server
 ppc:
@@ -53,3 +57,6 @@ ppc-linux:
 ppc-image: ppc-linux
 	docker build -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) ; fi
+
+firmware:
+	conan export-pkg $(FW_SRC_DIR) "jw3/stable" -s "compiler.version=5" -sf ${FW_BUILD_DIR} -f
