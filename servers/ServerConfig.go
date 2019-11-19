@@ -10,6 +10,8 @@ type ServerConfig struct {
 	brokerHostname string
 	BrokerURI      string
 	ClientID       string
+	EventPrefix    string
+	FunctionPrefix string
 }
 
 func NewServerConfiguration() *ServerConfig {
@@ -23,6 +25,8 @@ func NewServerConfiguration() *ServerConfig {
 		brokerHostname: host,
 		BrokerURI:      uri,
 		ClientID:       "ppc",
+		EventPrefix:    "/E/",
+		FunctionPrefix: "/F/",
 	}
 	return sc
 }

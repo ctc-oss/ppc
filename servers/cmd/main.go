@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -28,9 +29,10 @@ func main() {
 	// channel for shuttling mqtt events
 	events := make(chan [2]string)
 
-	if token := c.Subscribe("#", 0, func(client mqtt.Client, msg mqtt.Message) {
-		events <- [2]string{msg.Topic(), string(msg.Payload())}
-		println(msg.Topic())
+	if token := c.Subscribe(cfg.EventPrefix, 0, func(client mqtt.Client, msg mqtt.Message) {
+		t := strings.TrimLeft(msg.Topic(), cfg.EventPrefix)
+		events <- [2]string{t, string(msg.Payload())}
+		println(t)
 	}); token.Wait() && token.Error() != nil {
 		fmt.Println(token.Error())
 		os.Exit(1)
@@ -47,7 +49,7 @@ func main() {
 	mux.POST("/v1/devices/:device/:function", func(w http.ResponseWriter, r *http.Request) {
 		d := gorouter.GetParam(r, "device")
 		f := gorouter.GetParam(r, "function")
-		t := fmt.Sprintf("/F/%s/%s", d, f)
+		t := fmt.Sprintf("%s%s/%s", cfg.FunctionPrefix, d, f)
 		c.Publish(t, 0, false, r.Body)
 		w.WriteHeader(http.StatusOK)
 	})
