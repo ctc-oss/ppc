@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+func req2chan(r *http.Request) string {
+	return strings.TrimLeft(r.URL.Path, "/v1/events/")
+}
+
 func main() {
 	cfg := servers.NewServerConfiguration()
 	log.Printf("mqtt @ %s", cfg.BrokerURI)
@@ -38,18 +42,24 @@ func main() {
 		os.Exit(1)
 	}
 
-	s := sse.NewServer(nil)
+	so := sse.Options{ChannelNameFunc: req2chan}
+	s := sse.NewServer(&so)
 	defer s.Shutdown()
-	http.Handle("/v1/events", s)
 
 	mux := gorouter.New()
 	http.HandleFunc("/v1/health", handleHealth)
+	mux.GET("/v1/events/:t", func(w http.ResponseWriter, r *http.Request) {
+		s.ServeHTTP(w, r)
+	})
 
 	// POST /v1/devices/{DEVICE_ID}/{FUNCTION}
 	mux.POST("/v1/devices/:device/:function", func(w http.ResponseWriter, r *http.Request) {
 		d := gorouter.GetParam(r, "device")
 		f := gorouter.GetParam(r, "function")
 		t := fmt.Sprintf("%s%s/%s", cfg.FunctionPrefix, d, f)
+
+		println(fmt.Sprintf("function called %s(?)", t))
+
 		c.Publish(t, 0, false, r.Body)
 		w.WriteHeader(http.StatusOK)
 	})
@@ -58,7 +68,7 @@ func main() {
 	go func() {
 		for {
 			e := <-events
-			s.SendMessage("/v1/events", sse.NewMessage("", e[1], e[0]))
+			s.SendMessage(e[0], sse.NewMessage("", e[1], e[0]))
 		}
 	}()
 
