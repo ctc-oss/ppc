@@ -13,19 +13,25 @@ import (
 	"time"
 )
 
+func mqttOpts(cfg *servers.ServerConfig) *mqtt.ClientOptions {
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker(cfg.BrokerURI)
+	opts.SetClientID(cfg.ClientID)
+	opts.SetKeepAlive(2 * time.Second)
+	opts.SetPingTimeout(1 * time.Second)
+	return opts
+}
+
 func req2chan(r *http.Request) string {
-	return strings.TrimLeft(r.URL.Path, "/v1/events/")
+	e := strings.TrimLeft(r.URL.Path, "/v1/events/")
+	return fmt.Sprintf("%s/%s", "/E", e)
 }
 
 func main() {
 	cfg := servers.NewServerConfiguration()
 	log.Printf("mqtt @ %s", cfg.BrokerURI)
 
-	opts := mqtt.NewClientOptions().AddBroker(cfg.BrokerURI).SetClientID(cfg.ClientID)
-	opts.SetKeepAlive(2 * time.Second)
-	opts.SetPingTimeout(1 * time.Second)
-
-	c := mqtt.NewClient(opts)
+	c := mqtt.NewClient(mqttOpts(cfg))
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
@@ -61,6 +67,18 @@ func main() {
 		println(fmt.Sprintf("function called %s(?)", t))
 
 		c.Publish(t, 0, false, r.Body)
+		w.WriteHeader(http.StatusOK)
+	})
+	mux.POST("/v1/devices/events", func(w http.ResponseWriter, r *http.Request) {
+		t := r.FormValue("name")
+		d := r.FormValue("data")
+
+		t = fmt.Sprintf("%s%s", cfg.EventPrefix, t)
+		println(fmt.Sprintf("event published to %s", t))
+
+		c.Publish(t, 0, false, d)
+		events <- [2]string{t, d}
+
 		w.WriteHeader(http.StatusOK)
 	})
 	http.Handle("/", mux)
