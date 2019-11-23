@@ -64,17 +64,24 @@ func main() {
 		f := gorouter.GetParam(r, "function")
 		t := fmt.Sprintf("%s%s/%s", cfg.FunctionPrefix, d, f)
 
-		println(fmt.Sprintf("function called %s(?)", t))
+		println(fmt.Sprintf("function called %s", t))
 
-		c.Publish(t, 0, false, r.Body)
-		w.WriteHeader(http.StatusOK)
+		b := r.FormValue("args")
+		e := c.Publish(t, 0, false, b)
+
+		if e.Error() == nil {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			println(e.Error().Error())
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
 	mux.POST("/v1/devices/events", func(w http.ResponseWriter, r *http.Request) {
 		t := r.FormValue("name")
 		d := r.FormValue("data")
 
 		t = fmt.Sprintf("%s%s", cfg.EventPrefix, t)
-		println(fmt.Sprintf("event published to %s", t))
+		println(fmt.Sprintf("event: %s data: %s", t, d))
 
 		c.Publish(t, 0, false, d)
 		events <- [2]string{t, d}
