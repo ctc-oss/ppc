@@ -54,7 +54,9 @@ func main() {
 
 	mux := gorouter.New()
 	http.HandleFunc("/v1/health", handleHealth)
-	mux.GET("/v1/events/:t", func(w http.ResponseWriter, r *http.Request) {
+	mux.GET("/v1/events/{t:\\S+}", func(w http.ResponseWriter, r *http.Request) {
+		t := gorouter.GetParam(r, "t")
+		println(t)
 		s.ServeHTTP(w, r)
 	})
 
@@ -63,10 +65,10 @@ func main() {
 		d := gorouter.GetParam(r, "device")
 		f := gorouter.GetParam(r, "function")
 		t := fmt.Sprintf("%s%s/%s", cfg.FunctionPrefix, d, f)
-
-		println(fmt.Sprintf("function called %s", t))
-
 		b := r.FormValue("args")
+
+		println(fmt.Sprintf("function called %s => %s", t, b))
+
 		e := c.Publish(t, 0, false, b)
 
 		if e.Error() == nil {
@@ -81,7 +83,7 @@ func main() {
 		d := r.FormValue("data")
 
 		t = fmt.Sprintf("%s%s", cfg.EventPrefix, t)
-		println(fmt.Sprintf("event: %s data: %s", t, d))
+		println(fmt.Sprintf("event published: %s data: %s", t, d))
 
 		c.Publish(t, 0, false, d)
 		events <- [2]string{t, d}
@@ -93,7 +95,17 @@ func main() {
 	go func() {
 		for {
 			e := <-events
-			s.SendMessage(e[0], sse.NewMessage("", e[1], e[0]))
+			t := e[0]
+			s.SendMessage(t, sse.NewMessage("", e[1], t))
+			//println(fmt.Sprintf("t: %s", t))
+			for _, c := range s.Channels() {
+				//println(fmt.Sprintf("tt: %s", tt))
+				//println(fmt.Sprintf("%s ? %s", c, t))
+				if c != t && strings.HasPrefix(t, c) {
+					//println(fmt.Sprintf("=========%s======", tt))
+					s.SendMessage(c, sse.NewMessage("", e[1], t))
+				}
+			}
 		}
 	}()
 
