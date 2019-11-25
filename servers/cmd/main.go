@@ -52,10 +52,16 @@ func main() {
 	defer s.Shutdown()
 
 	mux := gorouter.New()
-	http.HandleFunc("/v1/health", handleHealth)
+
+	// Non-cloud functions
+	http.HandleFunc("/health", handleHealth)
+
+	//
+	// Cloud functions
+	//
+
+	// GET /v1/events/{EVENT_NAME}
 	mux.GET("/v1/events/{t:\\S+}", func(w http.ResponseWriter, r *http.Request) {
-		t := gorouter.GetParam(r, "t")
-		println(t)
 		s.ServeHTTP(w, r)
 	})
 
@@ -77,6 +83,8 @@ func main() {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	})
+
+	// GET /v1/devices/events/{EVENT_PREFIX}
 	mux.POST("/v1/devices/events", func(w http.ResponseWriter, r *http.Request) {
 		t := r.FormValue("name")
 		d := r.FormValue("data")
@@ -101,7 +109,7 @@ func main() {
 				//println(fmt.Sprintf("tt: %s", tt))
 				//println(fmt.Sprintf("%s ? %s", c, t))
 				if c != t && strings.HasPrefix(t, c) {
-					//println(fmt.Sprintf("=========%s======", tt))
+					//println(fmt.Sprintf("======%s==%s======", c, t))
 					s.SendMessage(c, sse.NewMessage("", e[1], t))
 				}
 			}
