@@ -23,8 +23,7 @@ func mqttOpts(cfg *servers.ServerConfig) *mqtt.ClientOptions {
 }
 
 func req2chan(r *http.Request) string {
-	e := strings.TrimLeft(r.URL.Path, "/v1/events/")
-	return fmt.Sprintf("%s/%s", "/E", e)
+	return strings.TrimLeft(r.URL.Path, "/v1/events/")
 }
 
 func main() {
@@ -82,10 +81,10 @@ func main() {
 		t := r.FormValue("name")
 		d := r.FormValue("data")
 
-		t = fmt.Sprintf("%s%s", cfg.EventPrefix, t)
-		println(fmt.Sprintf("event published: %s data: %s", t, d))
+		tt := fmt.Sprintf("%s%s", cfg.EventPrefix, t)
+		println(fmt.Sprintf("event published: %s data: %s", tt, d))
 
-		c.Publish(t, 0, false, d)
+		c.Publish(tt, 0, false, d)
 		events <- [2]string{t, d}
 
 		w.WriteHeader(http.StatusOK)
