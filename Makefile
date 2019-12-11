@@ -41,11 +41,11 @@ endif
 
 # Build the project images
 .DELETE_ON_ERROR:
-all: ppc
+all: ppc cli
 
 all-images: ppc-image
 
-.PHONY: all clean test firmware
+.PHONY: all clean test firmware cli
 
 # private cloud server
 ppc:
@@ -60,3 +60,6 @@ ppc-image: ppc-linux
 
 firmware:
 	conan export-pkg $(FW_SRC_DIR) "jw3/stable" -s "compiler.version=5" -sf ${FW_BUILD_DIR} -f
+
+cli:
+	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/particle ./cli/cmd/main.go
