@@ -26,7 +26,7 @@ namespace ppc
       bool function(const char* funcKey, user_std_function_int_str_t& func, void* reserved = nullptr);
 
       bool loop() { return client.loop(); }
-      bool connect(const char* id) { return client.connect(id); }
+      bool connect(const char* id = nullptr);
       bool isConnected() { return client.isConnected(); }
 
    private:

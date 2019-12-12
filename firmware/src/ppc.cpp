@@ -65,4 +65,9 @@ namespace ppc
          }
       }
    }
+
+   bool MQTTCloud::connect(const char* id) {
+      if(!id) return client.connect(mqttcloudid);
+      else return client.connect(id);
+   }
 }
