@@ -30,22 +30,14 @@ namespace ppc
       return client.subscribe(e.c_str());
    }
 
-   bool MQTTCloud::function(const char* funcKey, user_function_int_str_t func, void* reserved) {
+   bool MQTTCloud::function(const char* funcKey, user_function_int_str_t* func) {
       return function(funcKey, std::function<user_function_int_str_t>(func));
    }
 
-   bool MQTTCloud::function(const char* funcKey, user_std_function_int_str_t& func, void* reserved) {
+   bool MQTTCloud::function(const char* funcKey, const user_std_function_int_str_t& func, void* reserved) {
       const auto e = Fn + funcKey;
       functions[e] = std::make_shared<CloudFunc>(func);
       return client.subscribe(e.c_str());
-   }
-
-   template<typename T, class ... Types>
-   bool MQTTCloud::function(const T& name, Types ... args) {
-      static_assert(!is_string_literal<T>::value || sizeof(name) <= USER_FUNC_KEY_LENGTH + 1,
-                    "\n\nIn Particle.function, name must be " __XSTRING(USER_FUNC_KEY_LENGTH) " characters or less\n\n");
-
-      return function(name, args...);
    }
 
    void MQTTCloud::callback(char* t, uint8_t* d, uint32_t c) {

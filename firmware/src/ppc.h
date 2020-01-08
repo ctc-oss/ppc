@@ -20,10 +20,13 @@ namespace ppc
       bool publish(const char* eventName, const char* data, PublishFlags flags);
       bool subscribe(const char* eventName, EventHandler handler, Spark_Subscription_Scope_TypeDef scope = MY_DEVICES);
 
-      template<typename T, class ... Types>
-      bool function(const T& name, Types ... args);
-      bool function(const char* funcKey, user_function_int_str_t func, void* reserved = nullptr);
-      bool function(const char* funcKey, user_std_function_int_str_t& func, void* reserved = nullptr);
+      template<typename T>
+      bool function(const char* funcKey, int (T::*func)(String), T* instance) {
+         using namespace std::placeholders;
+         return function(funcKey, std::bind(func, instance, _1));
+      }
+      bool function(const char* funcKey, user_function_int_str_t* func);
+      bool function(const char* funcKey, const user_std_function_int_str_t& func, void* reserved = nullptr);
 
       bool loop() { return client.loop(); }
       bool connect(const char* id = nullptr);
