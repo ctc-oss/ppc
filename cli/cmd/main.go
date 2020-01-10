@@ -28,7 +28,8 @@ func main() {
 				println(uri)
 
 				// POST /v1/devices/{DEVICE_ID}/{FUNCTION}
-				_, e := http.Post(uri, "text/plain", strings.NewReader(""))
+				a := c.Args().Get(2)
+				_, e := http.Post(uri, "text/plain", strings.NewReader(a))
 				return e
 			},
 		},
