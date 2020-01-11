@@ -6,8 +6,8 @@ import (
 	"github.com/urfave/cli"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -29,7 +29,12 @@ func main() {
 
 				// POST /v1/devices/{DEVICE_ID}/{FUNCTION}
 				a := c.Args().Get(2)
-				_, e := http.Post(uri, "text/plain", strings.NewReader(a))
+				v := url.Values{}
+				if len(a) > 0 {
+					v.Set("args", a)
+				}
+				_, e := http.PostForm(uri, v)
+
 				return e
 			},
 		},

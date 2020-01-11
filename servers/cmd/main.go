@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/alexandrevicenzi/go-sse"
 	"github.com/eclipse/paho.mqtt.golang"
@@ -71,11 +70,7 @@ func main() {
 		d := gorouter.GetParam(r, "device")
 		f := gorouter.GetParam(r, "function")
 		t := fmt.Sprintf("%s%s/%s", cfg.FunctionPrefix, d, f)
-		//b := r.FormValue("args")
-
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(r.Body)
-		b := buf.String()
+		b := r.FormValue("args")
 
 		println(fmt.Sprintf("function called %s => %s", t, b))
 
