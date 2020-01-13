@@ -8,6 +8,7 @@ import (
 	"github.com/xujiajun/gorouter"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -70,7 +71,8 @@ func main() {
 		d := gorouter.GetParam(r, "device")
 		f := gorouter.GetParam(r, "function")
 		t := fmt.Sprintf("%s%s/%s", cfg.FunctionPrefix, d, f)
-		b := r.FormValue("args")
+		eb := r.FormValue("args")
+		b, _ := url.QueryUnescape(eb)
 
 		println(fmt.Sprintf("function called %s => %s", t, b))
 
