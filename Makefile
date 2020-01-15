@@ -24,6 +24,9 @@ override LDFLAGS += \
 DOCKER_PUSH?=true
 IMAGE_NAMESPACE?=jwiii
 IMAGE_TAG?=latest
+GOARCH?=amd64
+CGO_ENABLED=0
+GOOS=linux
 
 ifeq (${DOCKER_PUSH},true)
 ifndef IMAGE_NAMESPACE
@@ -35,8 +38,13 @@ ifneq (${GIT_TAG},)
 IMAGE_TAG=${GIT_TAG}
 override LDFLAGS += -X ${PACKAGE}.gitTag=${GIT_TAG}
 endif
+
 ifdef IMAGE_NAMESPACE
 IMAGE_PREFIX=${IMAGE_NAMESPACE}/
+endif
+
+ifeq (${GOARCH},arm)
+export GOARM=7
 endif
 
 # Build the project images
@@ -51,10 +59,7 @@ all-images: ppc-image
 ppc:
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/ppc ./servers/cmd/main.go
 
-ppc-linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make ppc
-
-ppc-image: ppc-linux
+ppc-image: ppc
 	docker build -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) ; fi
 
