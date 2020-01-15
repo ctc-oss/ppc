@@ -1,7 +1,7 @@
 #include <ppc.h>
 #include <Particle.h>
 
-static const String mqttcloudid = spark_deviceID().substring(0, 6);
+static const String mqttcloudid = spark_deviceID().remove(0, 19);
 static const std::string Fn(String::format("/F/%s/", mqttcloudid.c_str()));
 static const std::string E("/E/");
 
