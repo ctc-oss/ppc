@@ -59,7 +59,23 @@ namespace ppc
    }
 
    bool MQTTCloud::connect(const char* id) {
-      if(!id) return client.connect(mqttcloudid);
-      else return client.connect(id);
+      static bool frist(true);
+      bool connected = client.isConnected();
+      if(!connected) {
+         if(!id) connected = client.connect(mqttcloudid);
+         else connected = client.connect(id);
+
+         if(connected && !frist) {
+            frist = false;
+
+            for(auto& e: handlers)
+               client.subscribe(e.first.c_str());
+            for(auto& e: functions)
+               client.subscribe(e.first.c_str());
+         }
+         else if(connected)
+            frist = false;
+      }
+      return connected;
    }
 }
