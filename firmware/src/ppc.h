@@ -34,6 +34,7 @@ namespace ppc
 
    private:
       MQTT client;
+      system_tick_t lastConnectedT = 0;
       std::map<std::string, CloudFuncPtr> functions;
       std::map<std::string, CloudEventHandlerPtr> handlers;
 
