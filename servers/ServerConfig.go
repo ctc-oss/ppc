@@ -14,8 +14,8 @@ type ServerConfig struct {
 
 func NewServerConfiguration() *ServerConfig {
 	broker := envOr(common.EnvVarBrokerUri, "localhost:1883")
-	funcPrefix := envOr(common.EnvVarFunctionPrefix, "localhost")
-	eventPrefix := envOr(common.EnvVarEventPrefix, "localhost")
+	funcPrefix := envOr(common.EnvVarFunctionPrefix, "/F/")
+	eventPrefix := envOr(common.EnvVarEventPrefix, "/E/")
 
 	sc := &ServerConfig{
 		ClientID:       "ppc",
