@@ -1,32 +1,35 @@
 package servers
 
 import (
-	"fmt"
 	"github.com/jw3/ppc/common"
 	"os"
 )
 
 type ServerConfig struct {
-	brokerHostname string
-	BrokerURI      string
 	ClientID       string
+	BrokerURI      string
 	EventPrefix    string
 	FunctionPrefix string
 }
 
 func NewServerConfiguration() *ServerConfig {
-	host, ok := os.LookupEnv(common.EnvVarBrokerHostname)
-	if !ok {
-		host = "localhost"
-	}
-	uri := fmt.Sprintf("tcp://%s:1883", host)
+	broker := envOr(common.EnvVarBrokerUri, "localhost:1883")
+	funcPrefix := envOr(common.EnvVarFunctionPrefix, "localhost")
+	eventPrefix := envOr(common.EnvVarEventPrefix, "localhost")
 
 	sc := &ServerConfig{
-		brokerHostname: host,
-		BrokerURI:      uri,
 		ClientID:       "ppc",
-		EventPrefix:    "/E/",
-		FunctionPrefix: "/F/",
+		BrokerURI:      broker,
+		EventPrefix:    eventPrefix,
+		FunctionPrefix: funcPrefix,
 	}
 	return sc
+}
+
+func envOr(key, or string) string {
+	v, ok := os.LookupEnv(key)
+	if !ok {
+		v = or
+	}
+	return v
 }
