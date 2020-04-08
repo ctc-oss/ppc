@@ -21,7 +21,7 @@ override LDFLAGS += \
   -X ${PACKAGE}.gitTreeState=${GIT_TREE_STATE}
 
 #  docker image publishing options
-DOCKER_PUSH?=true
+DOCKER_PUSH?=false
 IMAGE_NAMESPACE?=jwiii
 IMAGE_TAG?=latest
 GOARCH?=amd64
@@ -53,14 +53,17 @@ all: ppc cli
 
 all-images: ppc-image
 
-.PHONY: all clean test firmware cli
+.PHONY: all server-config ppc ppc-image firmware cli
 
 # private cloud server
-ppc:
+server-config:
+	go build -v -ldflags '${LDFLAGS}' ./servers/ServerConfig.go
+
+ppc: server-config
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/ppc ./servers/cmd/main.go
 
 ppc-image: ppc
-	docker build -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
+	docker build --build-arg https_proxy -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) ; fi
 
 firmware:
