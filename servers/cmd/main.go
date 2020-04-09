@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/alexandrevicenzi/go-sse"
 	"github.com/eclipse/paho.mqtt.golang"
@@ -29,6 +30,21 @@ func req2chan(r *http.Request) string {
 
 func main() {
 	cfg := servers.NewServerConfiguration()
+
+	mqttUri := flag.String("mqtt", cfg.BrokerURI, "uri of mqtt server")
+	eventPre := flag.String("event-prefix", cfg.EventPrefix, "event topic prefix")
+	functionPre := flag.String("function-prefix", cfg.FunctionPrefix, "function topic prefix")
+	flag.Parse()
+
+	if *mqttUri == "" || *eventPre == "" || *functionPre == "" {
+		flag.Usage()
+		return
+	}
+
+	cfg.BrokerURI = *mqttUri
+	cfg.EventPrefix = *eventPre
+	cfg.FunctionPrefix = *functionPre
+
 	log.Printf("mqtt @ %s", cfg.BrokerURI)
 
 	c := mqtt.NewClient(mqttOpts(cfg))

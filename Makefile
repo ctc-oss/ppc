@@ -4,11 +4,11 @@ PACKAGE=github.com/jw3/ppc
 CURRENT_DIR=$(shell pwd)
 DIST_DIR=${CURRENT_DIR}/dist
 
-VERSION=$(shell cat ${CURRENT_DIR}/VERSION)
 BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_TAG=$(shell if [ -z "`git status --porcelain`" ]; then git describe --exact-match --tags HEAD 2>/dev/null; fi)
 GIT_TREE_STATE=$(shell if [ -z "`git status --porcelain`" ]; then echo "clean" ; else echo "dirty"; fi)
+VERSION=?${GIT_TAG}
 
 FW_BUILD_DIR=${DIST_DIR}/firmware
 export FW_SRC_DIR=${CURRENT_DIR}/firmware
@@ -21,7 +21,7 @@ override LDFLAGS += \
   -X ${PACKAGE}.gitTreeState=${GIT_TREE_STATE}
 
 #  docker image publishing options
-DOCKER_PUSH?=true
+DOCKER_PUSH?=false
 IMAGE_NAMESPACE?=jwiii
 IMAGE_TAG?=latest
 GOARCH?=amd64
@@ -30,7 +30,7 @@ GOOS=linux
 
 ifeq (${DOCKER_PUSH},true)
 ifndef IMAGE_NAMESPACE
-$(error IMAGE_NAMESPACE must be set to push images (e.g. IMAGE_NAMESPACE=argoproj))
+$(error IMAGE_NAMESPACE must be set to push images (e.g. IMAGE_NAMESPACE=jwiii))
 endif
 endif
 
@@ -53,14 +53,17 @@ all: ppc cli
 
 all-images: ppc-image
 
-.PHONY: all clean test firmware cli
+.PHONY: all server-config ppc ppc-image firmware cli
 
 # private cloud server
-ppc:
+server-config:
+	go build -v -ldflags '${LDFLAGS}' ./servers/ServerConfig.go
+
+ppc: server-config
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/ppc ./servers/cmd/main.go
 
 ppc-image: ppc
-	docker build -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
+	docker build --build-arg https_proxy -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) ; fi
 
 firmware:
