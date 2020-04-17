@@ -32,20 +32,25 @@ func main() {
 	cfg := servers.NewServerConfiguration()
 
 	mqttUri := flag.String("mqtt", cfg.BrokerURI, "uri of mqtt server")
-	eventPre := flag.String("event-prefix", cfg.EventPrefix, "event topic prefix")
-	functionPre := flag.String("function-prefix", cfg.FunctionPrefix, "function topic prefix")
+	appPre := flag.String("event-prefix", cfg.AppPrefix, "event topic prefix")
+	eventCh := flag.String("event-prefix", cfg.EventChannelId, "event topic prefix")
+	functionCh := flag.String("function-prefix", cfg.FunctionChannelId, "function topic prefix")
 	flag.Parse()
 
-	if *mqttUri == "" || *eventPre == "" || *functionPre == "" {
+	if *mqttUri == "" || *eventCh == "" || *functionCh == "" {
 		flag.Usage()
 		return
 	}
 
 	cfg.BrokerURI = *mqttUri
-	cfg.EventPrefix = *eventPre
-	cfg.FunctionPrefix = *functionPre
+	cfg.AppPrefix = *appPre
+	cfg.EventChannelId = *eventCh
+	cfg.FunctionChannelId = *functionCh
 
 	log.Printf("mqtt @ %s", cfg.BrokerURI)
+
+	eventTopic := fmt.Sprintf("%s/%s", cfg.AppPrefix, cfg.EventChannelId)
+	functionTopic := fmt.Sprintf("%s/%s", cfg.AppPrefix, cfg.FunctionChannelId)
 
 	c := mqtt.NewClient(mqttOpts(cfg))
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
@@ -55,8 +60,8 @@ func main() {
 	// channel for shuttling mqtt events
 	events := make(chan [2]string)
 
-	if token := c.Subscribe(cfg.EventPrefix, 0, func(client mqtt.Client, msg mqtt.Message) {
-		t := strings.TrimLeft(msg.Topic(), cfg.EventPrefix)
+	if token := c.Subscribe(eventTopic, 0, func(client mqtt.Client, msg mqtt.Message) {
+		t := strings.TrimLeft(msg.Topic(), eventTopic)
 		events <- [2]string{t, string(msg.Payload())}
 		println(t)
 	}); token.Wait() && token.Error() != nil {
@@ -86,7 +91,7 @@ func main() {
 	mux.POST("/v1/devices/:device/:function", func(w http.ResponseWriter, r *http.Request) {
 		d := gorouter.GetParam(r, "device")
 		f := gorouter.GetParam(r, "function")
-		t := fmt.Sprintf("%s%s/%s", cfg.FunctionPrefix, d, f)
+		t := fmt.Sprintf("%s/%s/%s", functionTopic, d, f)
 		eb := r.FormValue("args")
 		b, _ := url.QueryUnescape(eb)
 
@@ -107,7 +112,7 @@ func main() {
 		t := r.FormValue("name")
 		d := r.FormValue("data")
 
-		tt := fmt.Sprintf("%s%s", cfg.EventPrefix, t)
+		tt := fmt.Sprintf("%s/%s", cfg.EventChannelId, t)
 		println(fmt.Sprintf("event published: %s data: %s", tt, d))
 
 		c.Publish(tt, 0, false, d)

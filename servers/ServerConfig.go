@@ -6,22 +6,25 @@ import (
 )
 
 type ServerConfig struct {
-	ClientID       string
-	BrokerURI      string
-	EventPrefix    string
-	FunctionPrefix string
+	ClientID          string
+	BrokerURI         string
+	AppPrefix         string
+	EventChannelId    string
+	FunctionChannelId string
 }
 
 func NewServerConfiguration() *ServerConfig {
 	broker := envOr(common.EnvVarBrokerUri, "localhost:1883")
-	funcPrefix := envOr(common.EnvVarFunctionPrefix, "/F/")
-	eventPrefix := envOr(common.EnvVarEventPrefix, "/E/")
+	appPrefix := envOr(common.EnvVarAppPrefix, "xr")
+	funcChannel := envOr(common.EnvVarFunctionChannel, "F")
+	eventChannel := envOr(common.EnvVarEventChannel, "E")
 
 	sc := &ServerConfig{
-		ClientID:       "ppc",
-		BrokerURI:      broker,
-		EventPrefix:    eventPrefix,
-		FunctionPrefix: funcPrefix,
+		ClientID:          "ppc",
+		BrokerURI:         broker,
+		AppPrefix:         appPrefix,
+		EventChannelId:    eventChannel,
+		FunctionChannelId: funcChannel,
 	}
 	return sc
 }
