@@ -32,7 +32,7 @@ func main() {
 	cfg := servers.NewServerConfiguration()
 
 	mqttUri := flag.String("mqtt", cfg.BrokerURI, "uri of mqtt server")
-	appPre := flag.String("event-prefix", cfg.AppPrefix, "event topic prefix")
+	appPre := flag.String("app-prefix", cfg.AppPrefix, "event topic prefix")
 	eventCh := flag.String("event-prefix", cfg.EventChannelId, "event topic prefix")
 	functionCh := flag.String("function-prefix", cfg.FunctionChannelId, "function topic prefix")
 	flag.Parse()
