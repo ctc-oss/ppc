@@ -62,7 +62,7 @@ server-config:
 ppc: server-config
 	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/ppc ./servers/cmd/main.go
 
-ppc-image: ppc
+ppc-image:
 	docker build --build-arg https_proxy -t $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) -f ./servers/cmd/Dockerfile .
 	@if [ "$(DOCKER_PUSH)" = "true" ] ; then  docker push $(IMAGE_PREFIX)ppc:$(IMAGE_TAG) ; fi
 
