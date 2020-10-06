@@ -70,4 +70,4 @@ firmware:
 	conan export-pkg $(FW_SRC_DIR) "jw3/stable" -s "compiler.version=5" -sf ${FW_BUILD_DIR} -f
 
 cli:
-	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/particle ./cli/cmd/main.go
+	go build -v -ldflags '${LDFLAGS}' -o ${DIST_DIR}/polyform ./cli/cmd/main.go

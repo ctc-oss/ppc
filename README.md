@@ -1,24 +1,25 @@
 ppc
 ==
 
-### server
-_ private cloud
 
 #### server config
 
 | Field                           | Description                                      | Default Value
 | ------------------------------- | ------------------------------------------------ | --------------- |
-| BROKER_HOSTNAME                 | Hostname of the event broker                     | localhost       |
+| BROKER_URI                      | URI of the event broker                          | localhost:1883  |
+| APP_PREFIX                      | App topic prefix                                 | xr              |
+| EVENT_CHANNEL                   | Event Channel                                    | E               |
+| FUNCTION_CHANNEL                | Function Channel                                 | F               |
 
 ### cli
 
 ```
-$ particle 
+$ polyform 
  NAME:
-    particle - A new cli application
+    polyform - A new cli application
  
  USAGE:
-    particle [global options] command [command options] [arguments...]
+    polyform [global options] command [command options] [arguments...]
  
  COMMANDS:
     call     Call a particular function on a device
@@ -33,10 +34,6 @@ $ particle
 | Field                           | Description                                      | Default Value
 | ------------------------------- | ------------------------------------------------ | --------------- |
 | CLOUD_API                       | URI of cloud server                              | localhost:9000  |
-
-
-#### cli config
-
 
 
 ### build

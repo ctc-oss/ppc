@@ -18,7 +18,7 @@ func main() {
 		{
 			Name:        "call",
 			Usage:       "Call a particular function on a device",
-			UsageText:   "particle call [options] <device> <function> [argument]",
+			UsageText:   "polyform call [options] <device> <function> [argument]",
 			Description: "Call a particular function on a device",
 			ArgsUsage:   "[options] <device> <function> [argument]",
 			Action: func(c *cli.Context) error {
